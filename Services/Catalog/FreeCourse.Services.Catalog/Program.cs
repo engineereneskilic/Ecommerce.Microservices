@@ -1,11 +1,31 @@
+using FreeCourse.Services.Catalog.Services;
+using FreeCourse.Services.Catalog.Settings;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+//Scopes
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+
+
+builder.Services.AddAutoMapper(typeof(Program));
+
+
+//DB
+builder.Services.Configure<DatabaseSettings>(builder.Configuration.GetSection("DatabaseSettings"));
+
+var settings = builder.Configuration.GetSection("DatabaseSettings").Get<DatabaseSettings>();
+if (settings is null)
+{
+    throw new InvalidOperationException("DatabaseSettings section is missing or misconfigured.");
+}
+// DB last
 
 var app = builder.Build();
 
