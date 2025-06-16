@@ -1,0 +1,6 @@
+@FreeCourse.Services.Catalog_HostAddress = http://localhost:5150
+
+GET {{FreeCourse.Services.Catalog_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
