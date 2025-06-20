@@ -6,9 +6,9 @@ namespace FreeCourse.Services.Catalog.Services
 {
     public interface ICategoryService
     {
-        Task<ResponseDto<List<CategoryDto>>> GetAllAsync();
+        Task<ResponseDto<List<Category>>> GetAllAsync();
 
-        Task<ResponseDto<CategoryDto>> CreateAsync(Category category);
+        Task<ResponseDto<CategoryDto>> CreateAsync(CategoryDto category);
 
         Task<ResponseDto<CategoryDto>> GetByIdAsync(string id);
     }
