@@ -41,22 +41,56 @@ namespace FreeCourse.Services.Identity.Controller
             if (user == null || !await _userManager.CheckPasswordAsync(user, dto.Password))
                 return Unauthorized("Invalid credentials");
 
-            var token = GenerateJwt(user);
+            var token = GenerateJwtAsync(user);
             return Ok(new { token });
         }
 
-        private string GenerateJwt(IdentityUser user)
+
+        [HttpGet("getuser")]
+        public async Task<IActionResult> GetUser()
         {
-            var claims = new[]
+            var userIdClaim = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier);
+
+            if (userIdClaim == null)
             {
-            new Claim(ClaimTypes.NameIdentifier, user.Id),
-            new Claim(ClaimTypes.Name, user.UserName)
+                return BadRequest();
+            }
+
+            var user = await _userManager.FindByIdAsync(userIdClaim.Value);
+
+            return Ok( new
+            {
+                Id = user.Id,
+                UserName = user.UserName,
+                Email = user.Email
+            });
+
+        }
+
+
+        private async Task<string> GenerateJwtAsync(IdentityUser user)
+        {
+            var userRoles = await _userManager.GetRolesAsync(user);
+
+            var claims = new List<Claim>
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id), // <- Bu satırı ekle
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
+                new Claim(ClaimTypes.Name, user.UserName),
+                new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
+
+            // Rolleri claim olarak ekle
+            foreach (var role in userRoles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            var token = new JwtSecurityToken( 
+            var token = new JwtSecurityToken(
                 issuer: _config["Jwt:Issuer"],
                 audience: _config["Jwt:Audience"],
                 claims: claims,

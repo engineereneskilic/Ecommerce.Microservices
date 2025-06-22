@@ -1,5 +1,6 @@
 using System.Text;
 using FreeCourse.Services.Identity.Data;
+using FreeCourse.Services.Identity.Services;
 using FreeCourse.Services.Identity.Settings;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -74,7 +75,9 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddIdentityServer()
     .AddInMemoryApiScopes(Config.ApiScopes)
     .AddInMemoryClients(Config.Clients)
-    .AddDeveloperSigningCredential(); // dev ortamý için yeterlidir
+    .AddDeveloperSigningCredential()
+    .AddResourceOwnerValidator<IdentityResourceOwnerPasswordvalidator>(); // burada eklenmeli
+
 
 var app = builder.Build();
 
