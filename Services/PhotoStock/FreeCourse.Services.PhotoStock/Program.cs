@@ -1,12 +1,7 @@
-using FreeCourse.Services.Catalog.Services;
-using FreeCourse.Services.Catalog.Settings;
 using Microsoft.AspNetCore.Mvc.Authorization;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
 
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer("Bearer", options =>
@@ -21,10 +16,10 @@ builder.Services.AddAuthentication("Bearer")
 
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("CatalogScope", policy =>
+    options.AddPolicy("PhotoStockScope", policy =>
     {
         policy.RequireAuthenticatedUser();
-        policy.RequireClaim("scope", "catalog_fullpermission"); 
+        policy.RequireClaim("scope", "photostock_fullpermission");
     });
 });
 
@@ -33,49 +28,33 @@ builder.Services.AddControllers(opt =>
     opt.Filters.Add(new AuthorizeFilter());
 });
 
+// Add services to the container.
+builder.Services.AddControllers();
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
     {
-        Title = "Catalog API",
+        Title = "PhotoStock API",
         Version = "v1"
     });
 });
 
-//Scopes
-builder.Services.AddScoped<ICategoryService, CategoryService>();
-builder.Services.AddScoped<ICourseService, CourseService>();
-
-builder.Services.AddAutoMapper(typeof(Program));
-
-//DB
-builder.Services.Configure<DatabaseSettings>(builder.Configuration.GetSection("DatabaseSettings"));
-builder.Services.AddSingleton<IDatabaseSettings>(sp =>
-    sp.GetRequiredService<IOptions<DatabaseSettings>>().Value);
-
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+app.UseStaticFiles();
+
 if (app.Environment.IsDevelopment())
 {
-    app.UseDeveloperExceptionPage();
-
     app.UseSwagger();
 
     app.UseSwaggerUI(c =>
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Catalog API V1");
-        c.RoutePrefix = string.Empty;  // Swagger ana sayfa olarak açýlýr
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "PhotoStock API v1");
+        c.RoutePrefix = string.Empty; // Swagger'ý direkt kök dizinden açar (http://localhost:port/)
     });
 }
-
-AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
-{
-    Console.WriteLine("UNHANDLED EXCEPTION:");
-    Console.WriteLine(args.ExceptionObject.ToString());
-};
-
 app.UseAuthentication();
 app.UseAuthorization();
 

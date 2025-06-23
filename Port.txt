@@ -1,2 +1,5 @@
 Services
 -catalogAPI => 5011    -- mongbdb.driver yükle
+-photostockaip => 5012
+- identityserver => 5085
+-
