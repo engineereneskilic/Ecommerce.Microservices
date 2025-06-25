@@ -1,55 +1,54 @@
-using System.Text;
+ï»¿using System.IdentityModel.Tokens.Jwt;
 using FreeCourse.Services.Identity.Data;
 using FreeCourse.Services.Identity.Services;
 using FreeCourse.Services.Identity.Settings;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container
-builder.Services.AddControllers();
+// ------------------------------------------------------------------
+// 1. Database ve Identity AyarlarÄ±
+// ------------------------------------------------------------------
 
-// DbContext ve SQL Server baðlantýsý
 builder.Services.AddDbContext<AppIdentityDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("SqlServer")));
 
-// Identity servisleri (User & Role)
 builder.Services.AddIdentity<IdentityUser, IdentityRole>()
     .AddEntityFrameworkStores<AppIdentityDbContext>()
     .AddDefaultTokenProviders();
 
-// JWT ayarlarý
-var jwtSettings = builder.Configuration.GetSection("Jwt");
-var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]);
+// ------------------------------------------------------------------
+// 2. IdentityServer AyarlarÄ±
+// ------------------------------------------------------------------
 
-builder.Services.AddAuthentication("Bearer")
-    .AddJwtBearer("Bearer", options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtSettings["Issuer"],
-            ValidAudience = jwtSettings["Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(key)
-        };
-    });
+// sub claim'ini bozmamak iÃ§in IdentityServer'Ä±n varsayÄ±lan dÃ¶nÃ¼ÅŸÃ¼mÃ¼nÃ¼ iptal et
+JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Remove("sub");
 
-// Swagger/OpenAPI ayarlarý
+builder.Services.AddIdentityServer()
+    .AddAspNetIdentity<IdentityUser>()
+    .AddInMemoryApiResources(Config.ApiResources)
+    .AddInMemoryApiScopes(Config.ApiScopes)
+    .AddInMemoryClients(Config.Clients)
+    .AddInMemoryIdentityResources(Config.IdentityResources)
+    .AddDeveloperSigningCredential()
+    .AddResourceOwnerValidator<IdentityResourceOwnerPasswordvalidator>();
+
+// ------------------------------------------------------------------
+// 3. Controller ve Swagger AyarlarÄ±
+// ------------------------------------------------------------------
+
+builder.Services.AddControllers(); // â† Bunu mutlaka eklemelisin
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Identity API", Version = "v1" });
 
-    // Swagger'da JWT için "Authorize" butonu ekle
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Description = "JWT Authorization header. Örnek: 'Bearer {token}'",
+        Description = "JWT Authorization header. Ã–rnek: 'Bearer {token}'",
         Name = "Authorization",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.ApiKey,
@@ -67,28 +66,25 @@ builder.Services.AddSwaggerGen(c =>
                     Id = "Bearer"
                 }
             },
-            new string[] { }
+            Array.Empty<string>()
         }
     });
 });
 
-builder.Services.AddIdentityServer()
-    .AddInMemoryApiScopes(Config.ApiScopes)
-    .AddInMemoryClients(Config.Clients)
-    .AddDeveloperSigningCredential()
-    .AddResourceOwnerValidator<IdentityResourceOwnerPasswordvalidator>(); // burada eklenmeli
-
+// ------------------------------------------------------------------
+// 4. Build ve Middleware Pipeline
+// ------------------------------------------------------------------
 
 var app = builder.Build();
 
-// Veritabanýnda kullanýcý yoksa seed iþlemi
+// VeritabanÄ±na default kullanÄ±cÄ± ekle
 await IdentitySeed.SeedDefaultUserAsync(app.Services);
 
-// Middleware sýrasý çok önemli:
+// Middleware sÄ±rasÄ± Ã–NEMLÄ°!
 if (app.Environment.IsDevelopment())
 {
-    app.UseIdentityServer();
-    app.UseDeveloperExceptionPage(); // Detaylý hata sayfasý
+    app.UseDeveloperExceptionPage();
+
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
@@ -98,9 +94,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseAuthentication(); // Kimlik doðrulama middleware'i
-app.UseAuthorization();  // Yetkilendirme middleware'i
+// IdentityServer middlewareâ€™i (Authentication + Authorization iÃ§erir)
+app.UseIdentityServer();
 
+// Controller endpointlerini aktifleÅŸtir
 app.MapControllers();
 
 app.Run();

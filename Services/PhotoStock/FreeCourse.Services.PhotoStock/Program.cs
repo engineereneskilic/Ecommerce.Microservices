@@ -7,6 +7,7 @@ builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer("Bearer", options =>
     {
         options.Authority = builder.Configuration["IdentityServerURL"];
+        options.Audience = "resource_photo_stock";
         options.RequireHttpsMetadata = false; // Geliþtirme ortamý için
         options.TokenValidationParameters = new TokenValidationParameters
         {

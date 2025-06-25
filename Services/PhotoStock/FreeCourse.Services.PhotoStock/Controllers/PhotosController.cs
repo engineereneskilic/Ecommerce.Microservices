@@ -33,9 +33,10 @@ namespace FreeCourse.Services.PhotoStock.Controllers
             return CreateActionResultInstance(ResponseDto<PhotosDto>.Success(photoDto, 200));
         }
 
-        public IActionResult PhotoDelete(string photoUrl)
+        [HttpDelete("photodelete")]
+        public IActionResult PhotoDelete(string photoName)
         {
-            var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/photos", photoUrl);
+            var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/photos", photoName);
             if(!System.IO.File.Exists(path))
             {
                 return CreateActionResultInstance(ResponseDto<NoContent>.Fail("photo not found", 404));

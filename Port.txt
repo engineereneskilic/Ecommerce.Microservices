@@ -1,5 +1,7 @@
 Services
 -catalogAPI => 5011    -- mongbdb.driver yükle
 -photostockaip => 5012
-- identityserver => 5085
--
+- basket => 5013
+- Discount => 5014  - npgsql = postqre sql için yükle
+-  identityserver => 5085
+- 
