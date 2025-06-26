@@ -46,5 +46,23 @@ namespace FreeCourse.Services.Discount.Controllers
             return CreateActionResultInstance(discount);
         }
 
+        [HttpPost("save")]
+        public async Task<IActionResult> Save(Models.Discount discount)
+        {
+            return CreateActionResultInstance(await _discountService.Save(discount));
+        }
+
+        [HttpPost("update")]
+        public async Task<IActionResult> Update(Models.Discount discount)
+        {
+            return CreateActionResultInstance(await _discountService.Update(discount));
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            return CreateActionResultInstance(await _discountService.Delete(id));
+        }
+
     }
 }

@@ -75,7 +75,7 @@ namespace FreeCourse.Services.Identity.Settings
 
             new Client
             {
-                ClientId = "WbMvcClientUser",
+                ClientId = "WebMvcClientUser",
                 ClientSecrets = { new Secret("secret".Sha256()) },
                 AllowedGrantTypes = GrantTypes.ClientCredentials,
                 AllowedScopes = { "catalog_fullpermission", "photostock_fullpermission", IdentityServerConstants.LocalApi.ScopeName ,"gateway_fullpermission" }
