@@ -3,5 +3,6 @@ Services
 -photostockaip => 5012
 - basket => 5013
 - Discount => 5014  - npgsql = postqre sql için yükle
+- Order => 5015
 -  identityserver => 5085
 - 
