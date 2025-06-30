@@ -53,7 +53,7 @@ namespace FreeCourse.Services.Catalog.Services
 
             if(course == null)
             {
-                return ResponseDto<CourseDto>.Fail("Course not found", 404);
+                return ResponseDto<CourseDto>.Fail(new List<string> { "Course not found" }, 404);
             }
 
             course.Category = await _categoryCollection.Find<Category>(x => x.Id == course.CategoryId).FirstAsync();
@@ -101,7 +101,7 @@ namespace FreeCourse.Services.Catalog.Services
 
             if(result == null)
             {
-                return ResponseDto<NoContent>.Fail("Course not found", 404);
+                return ResponseDto<NoContent>.Fail(new List<string> { "Course not found" }, 404);
             }
 
 
@@ -119,7 +119,7 @@ namespace FreeCourse.Services.Catalog.Services
             }
             else
             {
-                return ResponseDto<NoContent>.Fail("Course not found", 404);
+                return ResponseDto<NoContent>.Fail(new List<string> { "Course not found" }, 404);
             }
 
         }

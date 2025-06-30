@@ -31,7 +31,7 @@ namespace FreeCourse.Services.Discount.Services
 
             if (disocunt == null)
             {
-                return ResponseDto<Models.Discount>.Fail("Discount not found",404);
+                return ResponseDto<Models.Discount>.Fail(new List<string> { "Discount not found" },404);
             }
 
             return ResponseDto<Models.Discount>.Success(disocunt,200);
@@ -46,7 +46,7 @@ namespace FreeCourse.Services.Discount.Services
                 return ResponseDto<NoContent>.Success(204);
             }
 
-            return ResponseDto<NoContent>.Fail("an error occured while adding",500);// kullanıcı kaynaklanan hata
+            return ResponseDto<NoContent>.Fail(new List<string> { "an error occured while adding" },500);// kullanıcı kaynaklanan hata
         }
 
         public async Task<ResponseDto<NoContent>> Update(Models.Discount discount)
@@ -58,7 +58,7 @@ namespace FreeCourse.Services.Discount.Services
                 return ResponseDto<NoContent>.Success(204);
             }
 
-            return ResponseDto<NoContent>.Fail("Discount not found",404);
+            return ResponseDto<NoContent>.Fail(new List<string> { "Discount not found" },404);
         }
 
         public async Task<ResponseDto<Models.Discount>> GetByCodeAndUserId(string code, string userId)
@@ -69,7 +69,7 @@ namespace FreeCourse.Services.Discount.Services
 
             if (hasDiscount != null)
             {
-                return ResponseDto<Models.Discount>.Fail("Discount not found",404);
+                return ResponseDto<Models.Discount>.Fail(new List<string> { "Discount not found" },404);
             }
 
             return ResponseDto<Models.Discount>.Success(hasDiscount,200);
@@ -80,7 +80,7 @@ namespace FreeCourse.Services.Discount.Services
         {
             var status = await _dbConnection.ExecuteAsync("Delete From discount WHERE id=@Id",new { Id = id });
 
-            return status > 0 ? ResponseDto<NoContent>.Success(204) : ResponseDto<NoContent>.Fail("Discount not found",404);
+            return status > 0 ? ResponseDto<NoContent>.Success(204) : ResponseDto<NoContent>.Fail(new List<string> { "Discount not found" },404);
 
         }
 

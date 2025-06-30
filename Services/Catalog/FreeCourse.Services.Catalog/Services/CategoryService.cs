@@ -48,7 +48,7 @@ namespace FreeCourse.Services.Catalog.Services
 
             if (category == null)
             {
-                return ResponseDto<CategoryDto>.Fail("Category not found",404);
+                return ResponseDto<CategoryDto>.Fail(new List<string> { "Category not found" },404);
             }
 
             return ResponseDto<CategoryDto>.Success(_mapper.Map<CategoryDto>(category),200);

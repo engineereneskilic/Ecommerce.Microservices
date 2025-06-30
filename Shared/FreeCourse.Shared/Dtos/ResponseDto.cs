@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using FreeCourse.Services.Order;
 
 namespace FreeCourse.Shared.Dtos
 {
@@ -25,25 +26,42 @@ namespace FreeCourse.Shared.Dtos
         {
             return new ResponseDto<T> { Data = data, StatusCode = statusCode, IsSuccessfull = true };
         }
-
         public static ResponseDto<T> Success(int statusCode)
         {
-            return new ResponseDto<T> { Data = default(T), StatusCode = statusCode, IsSuccessfull = true };
+            return new ResponseDto<T> {StatusCode = statusCode, IsSuccessfull = true };
         }
 
-        
-        
-        
+        //// Hatalı dönüş - birden fazla hata
+        //public static ResponseDto<T> Fail(List<string> errors, int statusCode)
+        //{
+        //    return new ResponseDto<T>
+        //    {
+        //        Errors = errors,
+        //        StatusCode = statusCode,
+        //        IsSuccessfull = false
+        //    };
+        //}
+
+
+        //public static ResponseDto<T> Fail(List<string> errors, int statusCode)
+        //{
+        //    return new ResponseDto<T> { Errors = errors, StatusCode = statusCode, IsSuccessfull = false };
+        //}
+
+        //public static ResponseDto<T> Fail(string error, int statusCode)
+        //{
+        //    return new ResponseDto<T> { Errors= new List<string>{error}, StatusCode = statusCode,IsSuccessfull = false};
+        //}
+
         public static ResponseDto<T> Fail(List<string> errors, int statusCode)
         {
-            return new ResponseDto<T> { Errors = errors, StatusCode = statusCode, IsSuccessfull = false };
+            return new ResponseDto<T>
+            {
+                Errors = errors,
+                StatusCode = statusCode,
+                IsSuccessfull = false
+            };
         }
-
-        public static ResponseDto<T> Fail(string error, int statusCode)
-        {
-            return new ResponseDto<T> { Errors= new List<string>{error}, StatusCode = statusCode,IsSuccessfull = false};
-        }
-
 
 
     }
