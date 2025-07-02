@@ -1,84 +1,107 @@
-using FreeCourse.Services.Catalog.Services;
+ï»¿using FreeCourse.Services.Catalog.Services;
 using FreeCourse.Services.Catalog.Settings;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
-builder.Services.AddAuthentication("Bearer")
+//  JWT Authentication
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer("Bearer", options =>
     {
-        options.Authority = builder.Configuration["IdentityServerURL"];
-        options.RequireHttpsMetadata = false; // Geliþtirme ortamý için
+        options.Authority = builder.Configuration["IdentityServerURL"]; // http://localhost:5085
+        options.RequireHttpsMetadata = false;
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateAudience = false
         };
     });
 
+// ðŸ›¡ Authorization Policy
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("CatalogScope", policy =>
     {
         policy.RequireAuthenticatedUser();
-        policy.RequireClaim("scope", "catalog_fullpermission"); 
+        policy.RequireClaim("scope", "catalog_fullpermission");
     });
 });
 
+//  Global authorize filtresi
 builder.Services.AddControllers(opt =>
 {
-    opt.Filters.Add(new AuthorizeFilter());
+    var policy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+
+    opt.Filters.Add(new AuthorizeFilter(policy));
 });
 
-builder.Services.AddEndpointsApiExplorer();
+//  Swagger + JWT destekli yapÄ±landÄ±rma
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    c.SwaggerDoc("v1", new OpenApiInfo
     {
         Title = "Catalog API",
         Version = "v1"
     });
+
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header. Ã–rnek: 'Bearer {token}'",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
 });
 
-//Scopes
+//  Service registrations
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ICourseService, CourseService>();
-
 builder.Services.AddAutoMapper(typeof(Program));
 
-//DB
+//  MongoDB ayarlarÄ±
 builder.Services.Configure<DatabaseSettings>(builder.Configuration.GetSection("DatabaseSettings"));
 builder.Services.AddSingleton<IDatabaseSettings>(sp =>
     sp.GetRequiredService<IOptions<DatabaseSettings>>().Value);
 
+//  HTTP pipeline
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
-
     app.UseSwagger();
-
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Catalog API V1");
-        c.RoutePrefix = string.Empty;  // Swagger ana sayfa olarak açýlýr
+        c.RoutePrefix = string.Empty;
     });
 }
 
-AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
-{
-    Console.WriteLine("UNHANDLED EXCEPTION:");
-    Console.WriteLine(args.ExceptionObject.ToString());
-};
-
+//  Middleware sÄ±ralamasÄ±
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();

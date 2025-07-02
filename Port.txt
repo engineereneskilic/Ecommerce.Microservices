@@ -5,8 +5,8 @@ Services
 - Discount => 5014  - npgsql = postqre sql için yükle
 - Order => 5015
 -  identityserver => 5085
-- 
+-  Payment => 5086
 
-
+- Gateway => 5000
 
  <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.6" />

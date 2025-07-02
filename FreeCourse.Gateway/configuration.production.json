@@ -1,0 +1,21 @@
+{
+    "Routes": [
+        {
+            "DownstreamPathTemplate": "/api/catalog/{**catchAll}",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "catalogapi-service",
+                    "Port": 5011
+                }
+            ],
+            "UpstreamPathTemplate": "/catalog/{**catchAll}",
+            "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
+        }
+        // Diğer servislerin production host'ları da buraya eklenir.
+    ],
+    "GlobalConfiguration": {
+        "BaseUrl": "http://gatewayapi"
+    },
+    "IdentityServerURL": "http://localhost:5085"
+}
